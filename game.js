@@ -13,14 +13,6 @@ function Board(size) {
   this.grid = this._makeGrid(size); // Make one for left/right alignments and one for top/bottom
 }
 
-Board.prototype.iterate = function (f) {
-  for (var x = 0; x < this.size; x++) {
-    for (var y = 0; y < this.size; y++) {
-      f(this.grid[x][y], x, y);
-    }
-  }
-};
-
 Board.prototype.addRandomTile = function () {
   var randomCell = this._randomAvailableCell();
   if (randomCell) {
@@ -38,6 +30,45 @@ Board.prototype.set = function (x, y, v) {
   return this.grid[x][y] = v;
 };
 
+Board.prototype.shift = function (direction) {
+  switch (direction) {
+    case 'up':
+
+      break;
+
+    case 'down':
+
+      break;
+
+    case 'left':
+
+      break;
+
+    case 'right':
+
+      break;
+  }
+};
+
+// How to use iterators?
+
+Board.prototype.merger = function (slice, reverse) {
+  function merge(curValue, nextValue) {
+    if (curValue === nextValue) {
+      slice[next] = curValue*2;
+    }
+  }
+
+  sliceIterator(merge, reverse);
+};
+
+Board.prototype._fillGapsInSlice = function (curValue, nextValue, cur, next, slice) {
+  if (!nextValue) {
+    slice[next] = curValue;
+    slice[cur] = undefined;
+  }
+};
+
 Board.prototype._makeGrid = function (size) {
   var grid = [];
   for (var x = 0; x < size; x++) {
@@ -48,7 +79,7 @@ Board.prototype._makeGrid = function (size) {
 
 Board.prototype._availbleCells = function () {
   var openCoords = [];
-  this.iterate(function (v, x, y) {
+  this._iterate(function (v, x, y) {
     if (!v) {
       openCoords.push({ x: x, y: y });
     }
@@ -63,6 +94,46 @@ Board.prototype._randomAvailableCell = function () {
   }
   return;
 };
+
+Board.prototype._iterate = function (f, reverse) {
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+      f(this.grid[x][y], x, y);
+    }
+  }
+};
+
+Board.prototype._iterateSlice = function (sliceIndex, f, horizontal, reverse) {
+  var slice;
+  if (!horizontal) {
+    slice = this.grid[sliceIndex].map(function (val, i) {
+      return { x: sliceIndex, y: i, val: val };
+    });
+  }
+  else {
+    slice = this._getHorizontalSlice(sliceIndex);
+  }
+
+  if(!reverse) {
+    for(i=0;i < this.size; i++) {
+      f(slice[i], slice[i+1]);
+    }
+  }
+  else {
+    i = this.size;
+    while (i--) {
+      f(slice[i], slice[i-1]);
+    }
+  }
+};
+
+Board.prototype._getHorizontalSlice = function (x) {
+  var slice = [];
+  for (var y = 0; y < this.size; y++) {
+    slice[y] = { x: x, y: y, val: this.grid[x][y] || 0 }
+  }
+  return slice;
+}
 
 Board.prototype.toString = function () {
   var board = '-------\n', line;
@@ -87,7 +158,10 @@ while(++i <= 2) {
   b.addRandomTile();
   console.log('' + b);
 
-}
+  b._iterateSlice(0, function (coord) {
+    console.log(coord);
+  });
 
+}
 
 
