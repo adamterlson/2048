@@ -24,19 +24,19 @@ Board.prototype.set = function (x, y, v) {
 Board.prototype.shift = function (direction) {
   switch (direction) {
     case 'up':
-        this._fillGapsInSlice()
+        this._shiftIntoGaps(false, true);
       break;
 
     case 'down':
-
+        this._shiftIntoGaps(false, false);
       break;
 
     case 'left':
-
+        this._shiftIntoGaps(true, true);
       break;
 
     case 'right':
-
+        this._shiftIntoGaps(true, false);
       break;
   }
 };
@@ -53,17 +53,21 @@ Board.prototype.merger = function (slice, reverse) {
   sliceIterator(merge, reverse);
 };
 
-Board.prototype._fillGapsInBoard = function (horizontal, reverse) {
+Board.prototype._shiftIntoGaps = function (horizontal, reverse) {
   var slice;
-  for (var i = 0; i < this.size - 1; i++) {
-    this._iterateSlice(i, this._fillGapsInSlice, horizontal, reverse);
+  for (var i = 0; i < this.size; i++) {
+    this._iterateSlice(i, this._shiftIntoGapsInSlice, horizontal, reverse);
   }
 };
 
-Board.prototype._fillGapsInSlice = function (cur, next) {
-  if (!next || next.val) {
-    next.value = curValue;
-    slice[cur] = undefined;
+Board.prototype._shiftIntoGapsInSlice = function (coord, i, slice) {
+  for (var j = 0; j < slice.length - 1; j++) {
+    if (slice[j].val === slice[j+1].val) {
+      coord.merge = true;
+    }
+    if (!slice[j].val) {
+      this.board[slice[j].x][slice[j].y]
+    }
   }
 };
 
@@ -80,7 +84,6 @@ Board.prototype._makeGrid = function (size) {
 
 Board.prototype._addRandomTile = function () {
   var randomCell = this._randomAvailableCell();
-  console.log('r', randomCell)
   if (randomCell) {
     var value = Math.random() < 0.9 ? 2 : 4;
     
@@ -115,7 +118,7 @@ Board.prototype._iterate = function (f, reverse) {
 };
 
 Board.prototype._iterateSlice = function (sliceIndex, f, horizontal, reverse) {
-  var slice;
+  var slice, i;
   if (!horizontal) {
     slice = this.grid[sliceIndex];
   }
@@ -123,16 +126,12 @@ Board.prototype._iterateSlice = function (sliceIndex, f, horizontal, reverse) {
     slice = this._getHorizontalSlice(sliceIndex);
   }
 
-  if(!reverse) {
-    for(i=0;i < this.size; i++) {
-      f(slice[i], slice[i+1]);
-    }
+  if(reverse) {
+    slice = slice.reverse();
   }
-  else {
-    i = this.size;
-    while (i--) {
-      f(slice[i], slice[i-1]);
-    }
+
+  for(i=0;i < this.size; i++) {
+    f(slice[i], i, slice);
   }
 };
 
@@ -160,17 +159,27 @@ Board.prototype.toString = function () {
 
 // Play game
 
-var i = 0;
-while(++i <= 2) {
+// var i = 0;
+// while(++i <= 2) {
 
   var b = new Board(4);
   b._addRandomTile();
+  b._addRandomTile();
+  b._addRandomTile();
+  b._addRandomTile();
+  b._addRandomTile();
   console.log('' + b);
-
+  b.shift('left');
   b._iterateSlice(0, function (coord) {
     console.log(coord);
+  }, true);
+
+  ['left', 'right', 'up', 'down'].forEach(function (direction) {
+    console.log('direction', direction);
+    b.shift(direction);
+    console.log('' + b);
   });
 
-}
+// }
 
 
